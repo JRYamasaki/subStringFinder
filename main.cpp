@@ -9,7 +9,9 @@
 #include <iterator>
 #include <fstream>
 #include <functional>
+#include <sstream>
 
+static const uint8_t NUMBER_OF_REQUIRED_ARGUMENTS = 3;
 std::unordered_map<std::string, std::vector<std::string>> output;
 
 void containsSubstring(
@@ -25,11 +27,15 @@ void containsSubstring(
     }
 }
 
-//Things to check, does the file exist? any exceptions thrown?
-std::set<std::string> fileToList (const std::string& fileName) {
+std::set<std::string> fileToList (char* fileName) {
     std::ifstream filein(fileName);
 
-    // We use a set to remove duplicates from either list of words
+    if(!filein.is_open()) {
+        std::ostringstream ss;
+        ss << "Cannot open file" << fileName;
+        throw std::runtime_error(ss.str());
+    }
+
     std::set<std::string> result;
 
     for (std::string line; std::getline(filein, line);) 
@@ -40,12 +46,39 @@ std::set<std::string> fileToList (const std::string& fileName) {
     return result;
 }
 
-static const std::string ALL_WORDS_FILE_NAME = "allWords2.txt";
-static const std::string COMMON_WORDS_FILE_NAME = "commonWords3.txt";
+// void sortOutput(std::unordered_map<std::string, std::vector<std::string>>& output) {
+//     std::for_each(
+//         output.begin(),
+//         output.end(),
+//         [](const std::pair<std::string, std::vector<std::string>> &p) {
+//             std::sort(p.second.begin(), p.second.end());
+//         }
+//     );
+// }
 
-int main() {
-    const std::set<std::string> allWords = fileToList(ALL_WORDS_FILE_NAME);
-    const std::set<std::string> commonWords = fileToList(COMMON_WORDS_FILE_NAME);
+// void printOutput(
+//     const std::set<std::string>& allWords,
+//     const std::unordered_map<std::string, std::vector<std::string>>& output) {
+    
+//     for(std::string word : allWords) {
+//         std::cout << word;
+//         std::cout << "[";
+
+//         for(std::string match : output.at(word)) {
+//             std::cout << match << ", ";
+//         }
+        
+//         std::cout << "]\n";
+//     }
+// }
+
+int main(int argc, char *argv[]) {
+    if(argc != NUMBER_OF_REQUIRED_ARGUMENTS) {
+        throw std::runtime_error("Must pass two filenames as parameters, first parameter is the list of all words, second parameter is the list of common words");
+    }
+
+    const std::set<std::string> allWords = fileToList(argv[1]);
+    const std::set<std::string> commonWords = fileToList(argv[2]);
 
     std::mutex outputMutex;
     std::vector<std::thread> threads;
@@ -59,6 +92,10 @@ int main() {
         thread.join();
     }
 
+    //sortOutput(output);
+    //printOutput(allWords, output);
+
+    //Print output
     std::for_each(
         output.begin(),
         output.end(),
