@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <algorithm>
+#include <set>
 
 #include <iterator>
 #include <fstream>
@@ -25,30 +26,33 @@ void containsSubstring(
 }
 
 //Things to check, does the file exist? any exceptions thrown?
-std::vector<std::string> fileToList (const std::string& fileName) {
+std::set<std::string> fileToList (const std::string& fileName) {
     std::ifstream filein(fileName);
-    std::vector<std::string> result;
+
+    // We use a set to remove duplicates from either list of words
+    std::set<std::string> result;
 
     for (std::string line; std::getline(filein, line);) 
     {
-        result.push_back(line);
+        result.insert(line);
     }
 
     return result;
 }
 
 static const std::string ALL_WORDS_FILE_NAME = "allWords1.txt";
-static const std::string COMMON_WORDS_FILE_NAME = "commonWords1.txt";
+static const std::string COMMON_WORDS_FILE_NAME = "commonWords2.txt";
 
 int main() {
-    const std::vector<std::string> allWords = fileToList(ALL_WORDS_FILE_NAME);
-    const std::vector<std::string> commonWords = fileToList(COMMON_WORDS_FILE_NAME);
+    const std::set<std::string> allWords = fileToList(ALL_WORDS_FILE_NAME);
+    const std::set<std::string> commonWords = fileToList(COMMON_WORDS_FILE_NAME);
 
     std::mutex outputMutex;
     std::vector<std::thread> threads;
+    std::vector<std::string> allWordsCopy {allWords.begin(), allWords.end()};
 
     for(std::string word : commonWords) {
-        threads.push_back(std::thread(containsSubstring, allWords, word, std::ref(outputMutex)));
+        threads.push_back(std::thread(containsSubstring, allWordsCopy, word, std::ref(outputMutex)));
     }
 
     for(auto& thread : threads) {
