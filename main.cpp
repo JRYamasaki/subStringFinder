@@ -40,8 +40,8 @@ std::set<std::string> fileToList (const std::string& fileName) {
     return result;
 }
 
-static const std::string ALL_WORDS_FILE_NAME = "allWords1.txt";
-static const std::string COMMON_WORDS_FILE_NAME = "commonWords2.txt";
+static const std::string ALL_WORDS_FILE_NAME = "allWords2.txt";
+static const std::string COMMON_WORDS_FILE_NAME = "commonWords3.txt";
 
 int main() {
     const std::set<std::string> allWords = fileToList(ALL_WORDS_FILE_NAME);
